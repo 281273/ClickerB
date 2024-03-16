@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+//#include <conio.h> not in CLion
 using namespace std;
 
 //View
@@ -44,10 +45,27 @@ public:
         return level;
     }
 
+    void addPoints(){
+        points+=1;
+        storePoints(points);
+        if(points%5==0){
+            addLevel();
+        }
+
+    }
+
+    void addLevel(){
+        level=points/5;
+        storePoints(points);
+        storeLevel(level);
+
+    }
+
 private:
     string x=" ";
     int points=0;
     int level=0;
+
 };
 
 //Controller
@@ -61,41 +79,36 @@ public:
         launch();
     }
 
-    void addPoints(string x){
-        int points=model->retrivePoints();
+    void checkStats(){
+        string x=model->retriveString();
+        int oldlevel=model->retriveLevel();
         if(x=="b"){
-            points+=1;
-
-            model->storePoints(points);
-            view->prompt("+1 point! \n");
-        }
-    }
-
-    void checkLevel(){
-        int points=model->retrivePoints();
-        int level=model->retriveLevel();
-        if(points==5){
-            points=0;
-            level+=1;
-
-            model->storePoints(points);
-            model->storeLevel(level);
-            view->prompt("+1 level!!! \n");
-        }
+            model->addPoints();
+            view->prompt("+1pkt \r");
+            int level=model->retriveLevel();
+            if(oldlevel<level){
+                view->prompt("+1lvl!!! \t");
+            }
+        }else if(x=="e"){
+            end=false;
+            view->prompt("\n Koniec gry. Twoj wynik ostateczny to: \n");
+        };
     }
 
     void launch(){
-            string s="";
-        do {
+        string s="";
+        view->prompt("Instrukcje: \n (b-> +1pkt , e-> wyjscie ,Kazde 5 pkt to +1lv) \n\n ");
+
+        while(end){
             //Funkcjonalnosc
-            view->prompt("Podaj znak (b-punkty , e-wyjscie): ");
+            //clrscr(); not working in Clion
+            view->prompt("Podaj znak: ");
             s = view->getInput();
             model->storeString(s);
 
             string x=model->retriveString();
 
-            addPoints(x);
-            checkLevel();
+            checkStats();
 
             //Wypisanie
             int points=model->retrivePoints();
@@ -109,13 +122,13 @@ public:
             //view->prompt(x);
             view->prompt("\n");
 
-        }while(s!="e");
+        }
 
     }
 private:
     View* view;
     Model* model;
-
+    bool end;
 };
 
 
@@ -126,3 +139,4 @@ int main() {
     Controller controller(&view , &model);
     return 0;
 }
+
